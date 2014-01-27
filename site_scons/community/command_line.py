@@ -24,6 +24,7 @@ def get_command_line_opts( host, products, VERSIONS ):
        BoolVariable('with_unittest','Build with gunit tests',False),
        BoolVariable('with_testtools','Build with test tools',False),
        BoolVariable('with_examples','Build with test tools',True),
+       BoolVariable('with_cassandra','Build with Cassandra support',False),
        BoolVariable('entitled','Whether the build is entitled or unentitled',False),
        PathVariable('gtest_home','Path to Google Test home',None, PathVariable.PathIsDir),
        ListVariable('middleware','Middleware(s) to be compiled in', 'avis', names = ['avis', 'qpid'] ),
@@ -54,9 +55,10 @@ def get_command_line_opts( host, products, VERSIONS ):
     if host['os'] == 'Linux':
         opts.AddVariables(
             PathVariable('avis_home','Path to Avis', '/usr/local/', PathVariable.PathIsDir),
-            PathVariable('qpid_home','Path to QPID Proton Libraries', 
+            PathVariable('qpid_home','Path to QPID Proton Libraries',
                 '/usr/local/', PathVariable.PathIsDir),
             PathVariable('cache_dir','Path to object cache', None, PathVariable.PathIsDir),
+            PathVariable('cassandra_home','Path to CQL java driver .jar', '/usr/local/', PathVariable.PathIsFile),
             EnumVariable('product', 'Product to be built', 'mamda',
                          #mamda all is a windows only build
                          allowed_values=( [ x for x in products if x != "mamdaall" ] )),

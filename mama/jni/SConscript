@@ -12,13 +12,22 @@ if not ConfigureJNI(env):
 java_classdir_builder = CreateJavaClassDirBuilder( env)
 java_classdir_builder.emitter = emit_java_classes_norecurse
 
+cassandra_source = Split("""
+            #mama/jni/src/com/wombat/mama/database/MamaCassandra.java
+""") 
+cassandra_example_source = Split("""
+            #mama/jni/src/com/wombat/mama/database/MamaCassandraListen.java
+""") 
+
 testtools_source = Split("""
             #mama/jni/src/com/wombat/mama/testtools/load/MamaChurnTest.java
             #mama/jni/src/com/wombat/mama/testtools/performance/MamaProducerJava.java
             #mama/jni/src/com/wombat/mama/testtools/performance/MamaConsumerJava.java
 """) 
 
-testtools = []
+testtools         = []
+cassandra         = []
+cassandra_example = []
 
 jExamples = Glob('src/com/wombat/mama/examples/*java')
 
@@ -43,14 +52,23 @@ if env['with_testtools'] == True:
     for t in testtools_source:
         testtools.append( env.Java( 'classes', t ) )
 
+if env['with_cassandra'] == True:
+    env.Append(JAVACLASSPATH = env['cassandra_home'])
+    for t in cassandra_source:
+        cassandra.append( env.Java( 'classes', t ) )
+    for t in cassandra_example_source:
+        cassandra_example.append( env.Java( 'classes', t ) )
+
 env.Depends( mama_classes, common_classes )
 env.Depends( testtools, mama_classes )
+env.Depends( cassandra,  mama_classes )
+env.Depends( cassandra_example, [ mama_classes, cassandra ] )
 
 # Builds all of the header files which is unnecessary but no reason not to
 # do this
 headers = env.JavaH(target=Dir('src/c/mamajni').abspath,source= [ mama_classes, common_classes ])
 
-env.Depends( headers, [ mama_classes, common_classes, testtools ] )
+env.Depends( headers, [ mama_classes, common_classes, testtools, cassandra ] )
 
 jar = env.Jar(target='mamajni.jar', source='classes', JARCHDIR = Dir('classes').abspath  )
 
